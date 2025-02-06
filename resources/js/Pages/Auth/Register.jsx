@@ -28,7 +28,7 @@ export default function Register() {
             <div className="bg-cover bg-center h-screen" style={{ backgroundImage: "url('https://assets.nflxext.com/ffe/siteui/vlv3/3eea5139-bd17-47f4-a49b-18b11ee5684f.jpg')" }}>
                 <div className="flex justify-center items-center h-full bg-black bg-opacity-50">
                     <div className="bg-gray p-10 rounded-lg w-96 max-w-full">
-                    <h2 className="text-2xl font-bold text-center mb-6 text-[#67BACA]">Website Galeri Foto</h2>
+                    <h2 className="text-2xl font-bold text-center mb-6 text-black">Website Galeri Foto</h2>
 
 
                         <div className="mb-4">
@@ -97,8 +97,8 @@ export default function Register() {
                                 <InputError message={errors.password_confirmation} className="mt-2" />
                             </div>
 
-                            <div className="mt-6 flex items-center justify-center">
-                                <PrimaryButton className="w-full text-center py-3" disabled={processing}>
+                            <div className="mt-6 flex items-center justify-center ">
+                                <PrimaryButton className="w-full text-center py-3 justify-center" disabled={processing}>
                                     Register
                                 </PrimaryButton>
                             </div>
