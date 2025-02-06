@@ -13,19 +13,19 @@ export default function AuthenticatedLayout({ header, children }) {
         useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-100 flex">
+        <div className="min-h-screen bg-[#175B68] flex">
             {/* Sidebar */}
             <Sidebar />
             
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col">
                 {/* Navbar */}
-                <nav className="border-b border-gray-100 bg-white ml-64"> {/* Menambahkan ml-64 pada navbar */}
+                <nav className="border-b border-[#175B68] bg-[#175B68]"> {/* Menambahkan ml-64 pada navbar */}
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <div className="flex h-16 justify-between">
                             <div className="flex">
                                 <div className="flex shrink-0 items-center">
-                                    <div className="text-xl font-bold text-gray-800">
+                                    <div className="text-xl font-bold text-white ml-20">
                                         Website Galeri Foto
                                     </div>
                                 </div>
@@ -38,7 +38,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                             <span className="inline-flex rounded-md">
                                                 <button
                                                     type="button"
-                                                    className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
+                                                    className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-[#175B68] transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                                 >
                                                     {user.name}
 
@@ -83,7 +83,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                             (previousState) => !previousState,
                                         )
                                     }
-                                    className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
+                                    className="inline-flex items-center justify-center rounded-md p-2 text-[#175B68] transition duration-150 ease-in-out hover:bg-gray-100 hover:text-[#175B68] focus:bg-gray-100 focus:text-[#175B68] focus:outline-none"
                                 >
                                     <svg
                                         className="h-6 w-6"

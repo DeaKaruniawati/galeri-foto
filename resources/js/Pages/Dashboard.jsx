@@ -1,22 +1,38 @@
 import Sidebar from '@/Components/Sidebar'; // Sidebar yang sudah dibuat
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'; // Layout yang sudah ada
 import { Head, usePage } from '@inertiajs/react'; // Head untuk mengatur title halaman dan usePage untuk mengambil data user
+import { useState } from 'react'; // Menggunakan useState untuk kontrol form
 
 export default function Dashboard() {
     const { user } = usePage().props.auth; // Mengambil data user yang sedang login
+    const [file, setFile] = useState(null); // State untuk file yang dipilih
+
+    // Fungsi untuk menangani perubahan pada input file
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        setFile(selectedFile);
+    };
+
+    // Fungsi untuk mengupload file (bisa disesuaikan dengan API atau backend Anda)
+    const handleUpload = () => {
+        if (!file) {
+            alert("Please select a file to upload");
+            return;
+        }
+
+        // Logic upload ke backend bisa dilakukan di sini
+        alert("Uploading photo: " + file.name);
+    };
 
     return (
         <AuthenticatedLayout>
             <Head title="Dashboard" />
 
             <div className="flex">
-                {/* Sidebar */}
-                <Sidebar />
-
                 {/* Main Content Area */}
-                <div className="flex-1 p-6 transition-all ml-0 sm:ml-64"> {/* Margin kiri 64px untuk layar besar, 0 untuk layar kecil */}
+                <div className="flex-1 transition-all ml-0">
                     {/* Dashboard Header */}
-                    <div className="flex items-center justify-between">
+                    <div className="w-full flex items-center justify-between">
                         <h1 className="text-3xl font-semibold text-gray-800">Welcome to Your Dashboard</h1>
 
                         {/* Search Bar */}
@@ -35,24 +51,51 @@ export default function Dashboard() {
                         <h2 className="text-xl font-medium text-gray-700">Hi, {user.name}!</h2>
                     </div>
 
+                    {/* Add New Photo Button */}
+                    <div className="mt-8 flex justify-between items-center">
+                        <button
+                            className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600"
+                            onClick={() => document.getElementById('file-input').click()} // Trigger input file when clicked
+                        >
+                            Add New Photo
+                        </button>
+
+                        {/* Input File Hidden */}
+                        <input
+                            id="file-input"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleFileChange}
+                        />
+
+                        {/* Upload Button */}
+                        <button
+                            className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600"
+                            onClick={handleUpload}
+                        >
+                            Upload Photo
+                        </button>
+                    </div>
+
                     {/* Dashboard Body */}
                     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {/* Stat 1 */}
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-lg font-medium text-gray-600">Total Photos</h2>
-                            <p className="text-2xl font-semibold text-gray-800">120</p>
+                        <div className="bg-[#189797] p-4 rounded-lg shadow-md">
+                            <h2 className="text-lg font-medium text-white">Total Photos</h2>
+                            <p className="text-2xl font-semibold text-white">120</p>
                         </div>
 
                         {/* Stat 2 */}
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-lg font-medium text-gray-600">Favorite Photos</h2>
-                            <p className="text-2xl font-semibold text-gray-800">25</p>
+                        <div className="bg-[#189797] p-4 rounded-lg shadow-md">
+                            <h2 className="text-lg font-medium  text-white">Favorite Photos</h2>
+                            <p className="text-2xl font-semibold  text-white">25</p>
                         </div>
 
                         {/* Stat 3 */}
-                        <div className="bg-white p-4 rounded-lg shadow-md">
-                            <h2 className="text-lg font-medium text-gray-600">Uploaded This Week</h2>
-                            <p className="text-2xl font-semibold text-gray-800">5</p>
+                        <div className="bg-[#189797] p-4 rounded-lg shadow-md">
+                            <h2 className="text-lg font-medium  text-white">Uploaded This Week</h2>
+                            <p className="text-2xl font-semibold  text-white">5</p>
                         </div>
                     </div>
 
