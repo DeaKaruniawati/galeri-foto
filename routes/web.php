@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +32,8 @@ Route::get('/dashboard', function () {
 Route::get('/gallery', function () {
     return Inertia::render('Gallery');
 })->middleware(['auth', 'verified'])->name('gallery');
+
+Route::post('/file-upload',[ImageController::class,'store'])->middleware(["auth","verified"])->name("file.upload.store");
 
 //Route untuk Album
 Route::get('/album', function (){
