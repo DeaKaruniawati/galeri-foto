@@ -12,7 +12,7 @@ class ImageController extends Controller
     public function __construct()
     {
         // Pastikan hanya user yang sudah login yang bisa mengupload gambar
-        $this->middleware('auth');
+        // $this->middleware('auth');
     }
 
     // Menampilkan form untuk upload gambar
@@ -29,16 +29,12 @@ class ImageController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        // Ambil file yang di-upload
         $file = $request->file('image');
 
-        // Nama file yang unik
         $filename = time() . '.' . $file->getClientOriginalExtension();
 
-        // Simpan file ke storage/public
-        $path = $file->storeAs('images', $filename, 'public');
+        $path = $file->storeAs('images', $filename, ["disk" => "public"]);
 
-        // Simpan informasi gambar ke database
         $image = new Image();
         $image->filename = $filename;
         $image->file_path = $path;
@@ -48,7 +44,7 @@ class ImageController extends Controller
         $image->save();
 
         // Kembali ke halaman gallery dengan pesan sukses
-        return redirect()->route('gallery.index')->with('success', 'Image uploaded successfully!');
+        return redirect()->route('gallery')->with('success', 'Image uploaded successfully!');
     }
 
     // Menampilkan gambar yang telah di-upload (misalnya gallery)
