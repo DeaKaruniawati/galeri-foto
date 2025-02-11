@@ -2,59 +2,47 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Image;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Image;
 
 class ImageController extends Controller
 {
-    public function __construct()
-    {
-        // Pastikan hanya user yang sudah login yang bisa mengupload gambar
-        $this->middleware('auth');
-    }
+    // Fungsi untuk meng-upload gambar
+    public function uploadImage(Request $request)
+{
+    // Validasi gambar
+    $request->validate([
+        'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
 
-    // Menampilkan form untuk upload gambar
-    public function create()
-    {
-        return view('images.create');
-    }
+    // Ambil gambar yang dipilih
+    $image = $request->file('image');
+    
+    // Simpan gambar di folder 'images' dengan driver 'public'
+    $imagePath = $image->store('images', 'public');
+    
+    // Simpan data gambar ke database
+    $imageRecord = new Image();
+    $imageRecord->file_name = $image->getClientOriginalName();  // Nama asli file
+    $imageRecord->file_size = $image->getSize();  // Ukuran file gambar
+    $imageRecord->file_type = $image->getClientMimeType();  // Tipe file gambar
+    $imageRecord->file_path = $imagePath;  // Path gambar di storage
+    $imageRecord->uploaded_at = now();  // Waktu upload
+    $imageRecord->save();  // Simpan ke database
 
-    // Menangani upload gambar
-    public function store(Request $request)
-    {
-        // Validasi file yang di-upload
-        $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
-
-        // Ambil file yang di-upload
-        $file = $request->file('image');
-
-        // Nama file yang unik
-        $filename = time() . '.' . $file->getClientOriginalExtension();
-
-        // Simpan file ke storage/public
-        $path = $file->storeAs('images', $filename, 'public');
-
-        // Simpan informasi gambar ke database
-        $image = new Image();
-        $image->filename = $filename;
-        $image->file_path = $path;
-        $image->file_type = $file->getMimeType();
-        $image->file_size = $file->getSize();
-        $image->user_id = Auth::id();
-        $image->save();
-
-        // Kembali ke halaman gallery dengan pesan sukses
-        return redirect()->route('gallery.index')->with('success', 'Image uploaded successfully!');
-    }
-
-    // Menampilkan gambar yang telah di-upload (misalnya gallery)
-    public function index()
-    {
-        $images = Image::where('user_id', Auth::id())->get(); // Menampilkan hanya gambar milik user yang sedang login
-        return view('images.index', compact('images'));
-    }
+    // Mengembalikan respon setelah upload berhasil
+    return response()->json(['message' => 'Image uploaded successfully!']);
 }
+public function getImages()
+{
+    // Ambil semua gambar dari database
+    $images = Image::all();
+
+    // Mengembalikan data gambar dalam format JSON
+    return response()->json($images);
+}
+
+
+}
+
+

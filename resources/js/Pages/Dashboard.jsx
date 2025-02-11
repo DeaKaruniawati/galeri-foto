@@ -1,41 +1,81 @@
-import Sidebar from '@/Components/Sidebar'; // Sidebar yang sudah dibuat
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'; // Layout yang sudah ada
-import { Head, usePage } from '@inertiajs/react'; // Head untuk mengatur title halaman dan usePage untuk mengambil data user
-import { useState } from 'react'; // Menggunakan useState untuk kontrol form
+import Sidebar from '@/Components/Sidebar';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, usePage } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
 
 export default function Dashboard() {
-    const { user } = usePage().props.auth; // Mengambil data user yang sedang login
-    const [file, setFile] = useState(null); // State untuk file yang dipilih
+    const { user } = usePage().props.auth;
+    const [file, setFile] = useState(null);
+    const [image, setImage] = useState([]);
+    const [preview, setPreview] = useState(null);
 
-    // Fungsi untuk menangani perubahan pada input file
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
+        console.log(selectedFile);
         setFile(selectedFile);
+
+        // Preview the image selected
+        const fileReader = new FileReader();
+        fileReader.onloadend = () => {
+            setPreview(fileReader.result);
+        };
+        if (selectedFile) {
+            fileReader.readAsDataURL(selectedFile);
+        }
     };
 
-    // Fungsi untuk mengupload file (bisa disesuaikan dengan API atau backend Anda)
-    const handleUpload = () => {
+    const handleUpload = async () => {
         if (!file) {
             alert("Please select a file to upload");
             return;
         }
 
-        // Logic upload ke backend bisa dilakukan di sini
-        alert("Uploading photo: " + file.name);
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('_token', document.head.querySelector('meta[name="csrf-token"]').content);
+
+        try {
+            const response = await fetch('/upload-image', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                alert("Image uploaded successfully!");
+                fetchImages(); // Fetch images after upload
+                setFile(null); // Reset file input
+                setPreview(null); // Reset preview
+            } else {
+                alert("Failed to upload image.");
+            }
+        } catch (error) {
+            console.error('Error uploading image:', error);
+        }
     };
+
+    const fetchImages = async () => {
+        try {
+            const response = await fetch('/get-image');
+            const data = await response.json();
+            setImage(data); // Update state with images from database
+        } catch (error) {
+            console.error('Error fetching images:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchImages(); // Fetch images when component loads
+    }, []);
 
     return (
         <AuthenticatedLayout>
             <Head title="Dashboard" />
 
             <div className="flex">
-                {/* Main Content Area */}
                 <div className="flex-1 transition-all ml-0">
-                    {/* Dashboard Header */}
                     <div className="w-full flex items-center justify-between">
                         <h1 className="text-3xl font-semibold text-gray-800">Welcome to Your Dashboard</h1>
 
-                        {/* Search Bar */}
                         <div className="flex items-center space-x-2">
                             <input
                                 type="text"
@@ -46,20 +86,11 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Greeting with User Name */}
                     <div className="mt-4">
                         <h2 className="text-xl font-medium text-gray-700">Hi, {user.name}!</h2>
                     </div>
 
-                    {/* Add New Photo Button */}
-                    <div className="mt-8 flex justify-between items-center">
-                        <button
-                            className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600"
-                            onClick={() => document.getElementById('file-input').click()} // Trigger input file when clicked
-                        >
-                            Add New Photo
-                        </button>
-
+                    <div className="mt-8">
                         {/* Input File Hidden */}
                         <input
                             id="file-input"
@@ -69,66 +100,52 @@ export default function Dashboard() {
                             onChange={handleFileChange}
                         />
 
-                        {/* Upload Button */}
-                        <button
-                            className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600"
-                            onClick={handleUpload}
-                        >
-                            Upload Photo
-                        </button>
+                        <div className="flex justify-between items-center">
+                            <button
+                                className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600"
+                                onClick={() => document.getElementById('file-input').click()} // Trigger file input when clicked
+                            >
+                                Choose Photo
+                            </button>
+
+                            <button
+                                className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600"
+                                onClick={handleUpload}
+                            >
+                                Upload Photo
+                            </button>
+                        </div>
+
+                        {/* Preview Image */}
+                        {preview && (
+                            <div className="mt-4">
+                                <h3 className="text-lg font-semibold text-gray-800">Preview:</h3>
+                                <img
+                                    src={preview}
+                                    alt="Preview"
+                                    className="mt-2 w-64 h-64 object-cover rounded-md"
+                                />
+                            </div>
+                        )}
                     </div>
 
-                    {/* Dashboard Body */}
-                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {/* Stat 1 */}
-                        <div className="bg-[#189797] p-4 rounded-lg shadow-md">
-                            <h2 className="text-lg font-medium text-white">Total Photos</h2>
-                            <p className="text-2xl font-semibold text-white">120</p>
-                        </div>
-
-                        {/* Stat 2 */}
-                        <div className="bg-[#189797] p-4 rounded-lg shadow-md">
-                            <h2 className="text-lg font-medium  text-white">Favorite Photos</h2>
-                            <p className="text-2xl font-semibold  text-white">25</p>
-                        </div>
-
-                        {/* Stat 3 */}
-                        <div className="bg-[#189797] p-4 rounded-lg shadow-md">
-                            <h2 className="text-lg font-medium  text-white">Uploaded This Week</h2>
-                            <p className="text-2xl font-semibold  text-white">5</p>
-                        </div>
-                    </div>
-
-                    {/* Galeri atau Konten Lain */}
                     <div className="mt-8">
                         <h2 className="text-2xl font-semibold text-gray-800">Your Photos Gallery</h2>
                         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {/* Contoh Foto */}
-                            <div className="bg-gray-100 p-4 rounded-lg shadow-md">
-                                <img
-                                    src="https://via.placeholder.com/300"
-                                    alt="Foto 1"
-                                    className="w-full h-48 object-cover rounded-md"
-                                />
-                                <p className="mt-2 text-gray-600 text-sm">Photo 1</p>
-                            </div>
-                            {/* Foto lainnya */}
-                            <div className="bg-gray-100 p-4 rounded-lg shadow-md">
-                                <img
-                                    src="https://via.placeholder.com/300"
-                                    alt="Foto 2"
-                                    className="w-full h-48 object-cover rounded-md"
-                                />
-                                <p className="mt-2 text-gray-600 text-sm">Photo 2</p>
-                            </div>
-                            <div className="bg-gray-100 p-4 rounded-lg shadow-md">
-                                <img
-                                    src="https://via.placeholder.com/300"
-                                    alt="Foto 3"
-                                    className="w-full h-48 object-cover rounded-md"
-                                />
-                                <p className="mt-2 text-gray-600 text-sm">Photo 3</p>
-                            </div>
+                            {image.length > 0 ? (
+                                image.map((img) => (
+                                    <div key={img.id} className="bg-gray-100 p-4 rounded-lg shadow-md">
+                                        <img
+                                            src={`http://localhost/storage/${img.file_path}`}
+                                            alt={img.filename}
+                                            className="w-full h-48 object-cover rounded-md"
+                                        />
+                                        <p className="mt-2 text-gray-600 text-sm">{img.file_name}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No image uploaded yet.</p>
+                            )}
                         </div>
                     </div>
                 </div>

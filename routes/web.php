@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,15 @@ Route::get('/', function () {
     // Jika tidak ada halaman register, arahkan ke halaman login
     return redirect()->route('login');
 });
+
+// Menangani upload gambar
+Route::post('/upload-image', [ImageController::class, 'uploadImage']);
+
+// Menangani mengambil data gambar
+Route::get('/get-image', [ImageController::class, 'getImage'])->name('image.get');
+
+Route::get('/get-image', [ImageController::class, 'getImage']);
+
 
 // Route untuk Dashboard
 Route::get('/dashboard', function () {
