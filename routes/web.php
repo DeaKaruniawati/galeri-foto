@@ -42,6 +42,8 @@ Route::get('/gallery', function () {
     return Inertia::render('Gallery');
 })->middleware(['auth', 'verified'])->name('gallery');
 
+Route::post('/file-upload',[ImageController::class,'store'])->middleware(["auth","verified"])->name("file.upload.store");
+
 //Route untuk Album
 Route::get('/album', function (){
     return Inertia::render('Album');
