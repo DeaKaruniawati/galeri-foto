@@ -24,7 +24,6 @@ export default function Dashboard() {
                 setTotalImages(response.data.length);
 
                 const todayResponse = await axios.get(route('images.today'));
-                setImages(todayResponse.data.images);
                 setTodayCount(todayResponse.data.count);
 
                 const favoriteResponse = await axios.get(route('images.favorites'));
@@ -33,7 +32,7 @@ export default function Dashboard() {
                 console.error("Error fetching images:", error);
             }
         };
-    
+
         fetchImages();
     }, []);
 
@@ -52,10 +51,8 @@ export default function Dashboard() {
                     },
                 });
 
-                console.log("Image uploaded:", response.data);
                 setImages([...images, response.data.image]);
                 setTotalImages(totalImages + 1);
-
                 setData("image", null);
             } catch (error) {
                 console.error("Error uploading image:", error);
@@ -67,7 +64,6 @@ export default function Dashboard() {
         setSearchQuery(e.target.value);
     };
 
-    // Filter images based on the search query
     const filteredImages = images.filter(image => image.file_name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return (
@@ -77,11 +73,7 @@ export default function Dashboard() {
             <div className="flex">
                 <div className="flex-1 transition-all ml-0">
                     <div className="w-full flex items-center justify-between">
-                        <h1 className="text-3xl font-semibold text-gray-800">
-                            Welcome to Your Dashboard
-                        </h1>
-
-                        {/* Search Bar next to the "Welcome" title */}
+                        <h1 className="text-3xl font-semibold text-gray-800">Welcome to Your Dashboard</h1>
                         <div className="flex items-center space-x-2">
                             <input
                                 type="text"
@@ -95,12 +87,9 @@ export default function Dashboard() {
                     </div>
 
                     <div className="mt-4">
-                        <h2 className="text-xl font-medium text-gray-700">
-                            Hi, {user.name}!
-                        </h2>
+                        <h2 className="text-xl font-medium text-gray-700">Hi, {user.name}!</h2>
                     </div>
 
-                    {/* Info Section - Make it Boxed */}
                     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div className="bg-gray-100 p-4 rounded-lg shadow-md">
                             <h3 className="text-lg font-semibold">Total Photos</h3>
@@ -116,7 +105,6 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Upload Photo Section */}
                     <div className="mt-8 flex justify-between items-center">
                         <button
                             className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600"
@@ -134,7 +122,6 @@ export default function Dashboard() {
                         />
                     </div>
 
-                    {/* Dashboard Body - Grid Layout for Images */}
                     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredImages.map((image) => (
                             <div key={image.id} className="bg-gray-100 p-4 rounded-lg shadow-md">

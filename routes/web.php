@@ -9,28 +9,26 @@ use Inertia\Inertia;
 
 // Menangani Halaman Utama
 Route::get('/', function () {
-    // Mengecek apakah pengguna sudah login atau belum
     if (Auth::check()) {
-        // Jika sudah login, arahkan ke dashboard
         return redirect()->route('dashboard');
     }
 
-    // Jika belum login dan registrasi diaktifkan, arahkan ke halaman register
     if (Route::has('register')) {
         return redirect()->route('register');
     }
 
-    // Jika tidak ada halaman register, arahkan ke halaman login
     return redirect()->route('login');
 });
 
-// Menangani Upload Gambar
-Route::post('/file-upload', [ImageController::class, 'store'])->middleware(['auth', 'verified'])->name('file.upload.store');
-// routes/web.php
-Route::get('/images', [ImageController::class, 'index'])->name('images.index');
-// Menangani Mengambil Data Gambar
-Route::get('/get-image', [ImageController::class, 'getImage'])->name('image.get');
-
+// Grouping image-related routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('/file-upload', [ImageController::class, 'store'])->name('file.upload.store');
+    Route::get('/images', [ImageController::class, 'index'])->name('images.index');
+    Route::get('/images/today', [ImageController::class, 'getTodayImages'])->name('images.today');
+    Route::get('/images/favorites', [ImageController::class, 'getFavoriteImages'])->name('images.favorites');
+    Route::put('/images/{id}', [ImageController::class, 'update'])->name('images.update');
+    Route::delete('/images/{id}', [ImageController::class, 'destroy'])->name('images.destroy');
+});
 
 // Route untuk Dashboard
 Route::get('/dashboard', function () {
