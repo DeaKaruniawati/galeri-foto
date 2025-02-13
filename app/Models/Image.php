@@ -11,10 +11,10 @@ class Image extends Model
 
     // Tentukan kolom-kolom yang dapat diisi
     protected $fillable = [
-        'filename', 
         'file_name', 
         'file_size', 
         'file_type', 
+        'file_path',
         'uploaded_at'
     ];
 

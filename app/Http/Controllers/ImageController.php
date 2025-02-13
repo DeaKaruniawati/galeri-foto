@@ -4,14 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Image;
+use Illuminate\Support\Facades\Auth;
 
 class ImageController extends Controller
 {
-    public function __construct()
-    {
-        // Pastikan hanya user yang sudah login yang bisa mengupload gambar
-        // $this->middleware('auth');
-    }
+    // Pastikan kita mengaktifkan middleware dengan benar di sini
+    // public function __construct()
+    // {
+    //     // Middleware 'auth' memastikan hanya pengguna yang sudah login yang dapat mengakses controller ini
+    //     $this->middleware('auth');
+    // }
 
     // Menampilkan form untuk upload gambar
     public function create()
@@ -29,26 +31,39 @@ class ImageController extends Controller
 
         $file = $request->file('image');
 
+        // Generate nama file baru berdasarkan waktu untuk menghindari duplikasi nama
         $filename = time() . '.' . $file->getClientOriginalExtension();
 
-        $path = $file->storeAs('images', $filename, ["disk" => "public"]);
+        // Menyimpan file gambar ke storage 'public'
+        $path = $file->storeAs('images', $filename, ['disk' => 'public']);
 
+        // Simpan informasi gambar ke database
         $image = new Image();
-        $image->filename = $filename;
-        $image->file_path = $path;
-        $image->file_type = $file->getMimeType();
+        $image->file_name = $filename; // Pastikan ini sesuai dengan kolom di database
         $image->file_size = $file->getSize();
-        $image->user_id = Auth::id();
+        $image->file_type = $file->getMimeType();
+        $image->file_path = $path;
         $image->save();
 
         // Kembali ke halaman gallery dengan pesan sukses
-        return redirect()->route('gallery')->with('success', 'Image uploaded successfully!');
+        return response()->json([
+            'success' => true,
+            'message' => 'Image uploaded successfully!',
+            'image' => $image
+        ]);
     }
+    public function index()
+{
+    // Ambil semua gambar dari database
+    $images = Image::all(); // Jika Anda ingin mengambil gambar berdasarkan pengguna, gunakan Auth::id()
+    return response()->json($images); // Mengembalikan data gambar dalam format JSON
+}
 
     // Menampilkan gambar yang telah di-upload (misalnya gallery)
-    public function index()
-    {
-        $images = Image::where('user_id', Auth::id())->get(); // Menampilkan hanya gambar milik user yang sedang login
-        return view('images.index', compact('images'));
-    }
+    // public function index()
+    // {
+    //     // Ambil gambar-gambar milik pengguna yang sedang login
+    //     $images = Image::where('user_id', Auth::id())->get();
+    //     return view('images.index', compact('images'));
+    // }
 }

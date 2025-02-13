@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth; // Pastikan Auth facade diimport
 use Inertia\Inertia;
 
+// Menangani Halaman Utama
 Route::get('/', function () {
     // Mengecek apakah pengguna sudah login atau belum
     if (Auth::check()) {
@@ -23,13 +24,12 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Menangani upload gambar
-Route::post('/upload-image', [ImageController::class, 'uploadImage']);
-
-// Menangani mengambil data gambar
+// Menangani Upload Gambar
+Route::post('/file-upload', [ImageController::class, 'store'])->middleware(['auth', 'verified'])->name('file.upload.store');
+// routes/web.php
+Route::get('/images', [ImageController::class, 'index'])->name('images.index');
+// Menangani Mengambil Data Gambar
 Route::get('/get-image', [ImageController::class, 'getImage'])->name('image.get');
-
-Route::get('/get-image', [ImageController::class, 'getImage']);
 
 
 // Route untuk Dashboard
@@ -42,14 +42,12 @@ Route::get('/gallery', function () {
     return Inertia::render('Gallery');
 })->middleware(['auth', 'verified'])->name('gallery');
 
-Route::post('/file-upload',[ImageController::class,'store'])->middleware(["auth","verified"])->name("file.upload.store");
-
-//Route untuk Album
-Route::get('/album', function (){
+// Route untuk Album
+Route::get('/album', function () {
     return Inertia::render('Album');
 })->middleware(['auth', 'verified'])->name('album');
 
-//Route untuk Favorit 
+// Route untuk Favorit
 Route::get('/favorit', function () {
     return Inertia::render('Favorit');
 })->middleware(['auth', 'verified'])->name('favorit');
@@ -61,5 +59,5 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Menyertakan route untuk autentikasi
 require __DIR__.'/auth.php';
-
