@@ -3,6 +3,7 @@
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
+use App\Http\Controllers\FavoriteController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth; // Pastikan Auth facade diimport
 use Inertia\Inertia;
@@ -49,6 +50,12 @@ Route::get('/album', function () {
 Route::get('/favorit', function () {
     return Inertia::render('Favorit');
 })->middleware(['auth', 'verified'])->name('favorit');
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/favorites', [FavoriteController::class, 'store'])->name('favorites.store');
+    Route::delete('/favorites/{id}', [FavoriteController::class, 'destroy'])->name('favorites.destroy');
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+});
 
 // Profil Route
 Route::middleware('auth')->group(function () {

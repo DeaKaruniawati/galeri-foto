@@ -13,7 +13,7 @@ export default function Sidebar() {
             <div className="text-center fixed top-3 left-3 z-40">
                 <button
                     onClick={toggleSidebar}
-                    className="text-black focus:text-slate-500 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none dark:focus:ring-blue-800"
+                    className="text-black focus:text-slate-500 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none bg-white"
                     type="submit"
                     aria-controls="drawer-navigation"
                 >

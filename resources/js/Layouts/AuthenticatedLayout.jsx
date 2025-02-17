@@ -13,7 +13,7 @@ export default function AuthenticatedLayout({ header, children }) {
         useState(false);
 
     return (
-        <div className="min-h-screen bg-[#175B68] flex">
+        <div className="min-h-screen bg-white flex">
             {/* Sidebar */}
             <Sidebar />
             

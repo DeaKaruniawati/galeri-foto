@@ -1,26 +1,37 @@
-// src/pages/Favorit.jsx
-import Sidebar from '@/Components/Sidebar'; // Sidebar yang sudah dibuat
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'; // Layout yang sudah ada
-import { Head, usePage } from '@inertiajs/react'; // Head untuk mengatur title halaman dan usePage untuk mengambil data user
+import Sidebar from '@/Components/Sidebar';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Head, usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function Favorit() {
     const { user } = usePage().props.auth; // Mengambil data user yang sedang login
+    const [favorites, setFavorites] = useState([]);
+
+    useEffect(() => {
+        const fetchFavorites = async () => {
+            try {
+                const response = await axios.get(route('favorites.index'));
+                setFavorites(response.data);
+            } catch (error) {
+                console.error("Error fetching favorites:", error);
+            }
+        };
+
+        fetchFavorites();
+    }, []);
 
     return (
         <AuthenticatedLayout>
             <Head title="Favorit" />
 
             <div className="flex">
-                {/* Sidebar */}
                 <Sidebar />
 
-                {/* Main Content Area */}
                 <div className="flex-1 p-6 transition-all ml-0 sm:ml-64">
-                    {/* Favorit Header */}
                     <div className="flex items-center justify-between">
                         <h1 className="text-3xl font-semibold text-gray-800">Your Favorite Photos</h1>
 
-                        {/* Search Bar */}
                         <div className="flex items-center space-x-2">
                             <input
                                 type="text"
@@ -31,34 +42,21 @@ export default function Favorit() {
                         </div>
                     </div>
 
-                    {/* Favorit Content */}
                     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {/* Contoh Foto Favorit */}
-                        <div className="bg-gray-100 p-4 rounded-lg shadow-md">
-                            <img
-                                src="https://via.placeholder.com/300"
-                                alt="Favorite 1"
-                                className="w-full h-48 object-cover rounded-md"
-                            />
-                            <p className="mt-2 text-gray-600 text-sm">Favorite 1</p>
-                        </div>
-                        {/* Foto Favorit lainnya */}
-                        <div className="bg-gray-100 p-4 rounded-lg shadow-md">
-                            <img
-                                src="https://via.placeholder.com/300"
-                                alt="Favorite 2"
-                                className="w-full h-48 object-cover rounded-md"
-                            />
-                            <p className="mt-2 text-gray-600 text-sm">Favorite 2</p>
-                        </div>
-                        <div className="bg-gray-100 p-4 rounded-lg shadow-md">
-                            <img
-                                src="https://via.placeholder.com/300"
-                                alt="Favorite 3"
-                                className="w-full h-48 object-cover rounded-md"
-                            />
-                            <p className="mt-2 text-gray-600 text-sm">Favorite 3</p>
-                        </div>
+                        {favorites.length > 0 ? (
+                            favorites.map((favorite) => (
+                                <div key={favorite.image.id} className="bg-gray-100 p-4 rounded-lg shadow-md">
+                                    <img
+                                        src={`/storage/images/${favorite.image.file_name}`}
+                                        alt={favorite.image.file_name}
+                                        className="w-full h-48 object-cover rounded-md"
+                                    />
+                                    <p className="mt-2 text-gray-600 text-sm">{favorite.image.file_name}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-600">No favorite images found.</p>
+                        )}
                     </div>
                 </div>
             </div>

@@ -8,6 +8,7 @@ export default function Gallery() {
     const { user } = usePage().props.auth;
     const [images, setImages] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [favorites, setFavorites] = useState(new Set()); // State for favorite image IDs
 
     useEffect(() => {
         const fetchImages = async () => {
@@ -20,6 +21,10 @@ export default function Gallery() {
         };
 
         fetchImages();
+        
+        // Load favorite status from localStorage
+        const savedFavorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        setFavorites(new Set(savedFavorites));
     }, []);
 
     const filteredImages = images.filter((image) =>
@@ -35,6 +40,11 @@ export default function Gallery() {
             try {
                 await axios.delete(route('images.destroy', id));
                 setImages(images.filter(image => image.id !== id));
+                setFavorites(prev => {
+                    const newFavorites = new Set(prev);
+                    newFavorites.delete(id);
+                    return newFavorites;
+                });
             } catch (error) {
                 console.error("Error deleting image:", error);
             }
@@ -45,8 +55,7 @@ export default function Gallery() {
         const newName = prompt("Enter new name for the image:");
         if (newName) {
             try {
-                const response = await axios.put(route('images.update', id), { file_name: newName });
-                // Update the state with the new file name
+                await axios.put(route('images.update', id), { file_name: newName });
                 setImages(images.map(image => (image.id === id ? { ...image, file_name: newName } : image)));
             } catch (error) {
                 console.error("Error renaming image:", error);
@@ -54,10 +63,39 @@ export default function Gallery() {
         }
     };
 
+    const toggleFavorite = async (id) => {
+        try {
+            if (favorites.has(id)) {
+                // Jika sudah favorit, hapus dari favorit
+                await axios.delete(route('favorites.destroy', id));
+                alert("Image removed from favorites!"); // Alert saat menghapus dari favorit
+            } else {
+                // Jika belum favorit, tambahkan ke favorit
+                await axios.post(route('favorites.store'), { image_id: id });
+                alert("Image added to favorites!"); // Alert saat menambahkan ke favorit
+            }
+            setFavorites(prev => {
+                const newFavorites = new Set(prev);
+                if (newFavorites.has(id)) {
+                    newFavorites.delete(id);
+                } else {
+                    newFavorites.add(id);
+                }
+
+                // Save updated favorites to localStorage
+                localStorage.setItem('favorites', JSON.stringify(Array.from(newFavorites)));
+
+                return newFavorites;
+            });
+        } catch (error) {
+            console.error("Error toggling favorite:", error);
+        }
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="Gallery" />
-
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
             <div className="flex">
                 <Sidebar />
                 <div className="flex-1 p-6 transition-all ml-0 sm:ml-64">
@@ -88,6 +126,12 @@ export default function Gallery() {
                                     <div className="flex space-x-2 mt-2">
                                         <button onClick={() => handleRename(image.id)} className="bg-yellow-500 text-white p-2 rounded-lg">Rename</button>
                                         <button onClick={() => handleDelete(image.id)} className="bg-red-500 text-white p-2 rounded-lg">Delete</button>
+                                        <button 
+                                            onClick={() => toggleFavorite(image.id)} 
+                                            className={`p-2 rounded-lg ${favorites.has(image.id) ? 'text-yellow-500' : 'text-gray-400'}`}
+                                        >
+                                            <i className={`fas fa-star ${favorites.has(image.id) ? 'text-yellow-500' : 'text-gray-400'}`}></i>
+                                        </button>
                                     </div>
                                 </div>
                             ))
