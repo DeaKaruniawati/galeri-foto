@@ -2,23 +2,22 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\ImageResource\Pages;
-use App\Filament\Resources\ImageResource\RelationManagers;
-use App\Models\Image;
+use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Resources\UserResource\RelationManagers;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class ImageResource extends Resource
+class UserResource extends Resource
 {
-    protected static ?string $model = Image::class;
+    protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -30,20 +29,17 @@ class ImageResource extends Resource
             ]);
     }
 
-    public static function canCreate(): bool
-    {
-        return false; // This removes the "Create" button
-    }
-
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                ImageColumn::make('file_path')->label('Preview')->square(),
-                TextColumn::make('user.name')->label('Uploaded By')->sortable(),
-                BadgeColumn::make('created_at')->label('Uploaded At')->date(),
+                TextColumn::make('name')->sortable(),
+                TextColumn::make('email')->sortable(),
+                BadgeColumn::make('created_at')->date()
             ])
-            ->filters([])
+            ->filters([
+                //
+            ])
             ->actions([
                 Tables\Actions\DeleteAction::make(),
             ]);
@@ -59,7 +55,7 @@ class ImageResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListImages::route('/'),
+            'index' => Pages\ListUsers::route('/'),
         ];
     }
 }
