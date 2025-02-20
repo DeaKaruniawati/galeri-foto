@@ -9,6 +9,7 @@ export default function Gallery() {
     const [images, setImages] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [favorites, setFavorites] = useState(new Set()); // State for favorite image IDs
+    const [modalImage, setModalImage] = useState(null); // State to manage image modal
 
     useEffect(() => {
         const fetchImages = async () => {
@@ -66,13 +67,13 @@ export default function Gallery() {
     const toggleFavorite = async (id) => {
         try {
             if (favorites.has(id)) {
-                // Jika sudah favorit, hapus dari favorit
+                // If already a favorite, remove it
                 await axios.delete(route('favorites.destroy', id));
-                alert("Image removed from favorites!"); // Alert saat menghapus dari favorit
+                alert("Image removed from favorites!"); // Alert when removing from favorites
             } else {
-                // Jika belum favorit, tambahkan ke favorit
+                // If not a favorite, add to favorites
                 await axios.post(route('favorites.store'), { image_id: id });
-                alert("Image added to favorites!"); // Alert saat menambahkan ke favorit
+                alert("Image added to favorites!"); // Alert when adding to favorites
             }
             setFavorites(prev => {
                 const newFavorites = new Set(prev);
@@ -90,6 +91,14 @@ export default function Gallery() {
         } catch (error) {
             console.error("Error toggling favorite:", error);
         }
+    };
+
+    const openModal = (image) => {
+        setModalImage(image); // Set the clicked image to display in the modal
+    };
+
+    const closeModal = () => {
+        setModalImage(null); // Close the modal by setting it to null
     };
 
     return (
@@ -120,7 +129,8 @@ export default function Gallery() {
                                     <img
                                         src={`/storage/images/${image.file_name}`}
                                         alt={image.file_name}
-                                        className="w-full h-48 object-cover rounded-md"
+                                        className="w-full h-48 object-cover rounded-md cursor-pointer"
+                                        onClick={() => openModal(image)} // Open modal when clicked
                                     />
                                     <p className="mt-2 text-gray-600 text-sm">{image.file_name}</p>
                                     <div className="flex space-x-2 mt-2">
@@ -139,6 +149,26 @@ export default function Gallery() {
                             <p className="text-gray-600">No images found.</p>
                         )}
                     </div>
+
+                    {/* Modal for full image view */}
+                    {modalImage && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div className="bg-white p-6 rounded-lg relative">
+            <button
+                className="absolute top-2 right-2 text-gray-700 text-3xl"
+                onClick={closeModal}
+            >
+                &times;
+            </button>
+            <img
+                src={`/storage/images/${modalImage.file_name}`}
+                alt={modalImage.file_name}
+                className="max-w-full max-h-[90vh] object-contain"
+            />
+        </div>
+    </div>
+)}
+
                 </div>
             </div>
         </AuthenticatedLayout>

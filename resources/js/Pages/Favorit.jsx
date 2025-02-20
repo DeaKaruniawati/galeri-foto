@@ -8,18 +8,19 @@ export default function Favorit() {
     const { user } = usePage().props.auth; // Mengambil data user yang sedang login
     const [favorites, setFavorites] = useState([]);
 
-    useEffect(() => {
-        const fetchFavorites = async () => {
-            try {
-                const response = await axios.get(route('favorites.index'));
-                setFavorites(response.data);
-            } catch (error) {
-                console.error("Error fetching favorites:", error);
-            }
-        };
+   useEffect(() => {
+    const fetchFavorites = async () => {
+        try {
+            const response = await axios.get(route('favorites.index'));
+            setFavorites(response.data.favorites);
+        } catch (error) {
+            console.error("Error fetching favorites:", error);
+        }
+    };
 
-        fetchFavorites();
-    }, []);
+    fetchFavorites();
+}, []);
+
 
     return (
         <AuthenticatedLayout>

@@ -49,4 +49,10 @@ class User extends Authenticatable
 {
     return $this->hasMany(Image::class); // Relasi dengan model Image
 }
+
+public function favorites()
+{
+    return $this->hasMany(Favorite::class); // Menghubungkan dengan tabel 'favorites'
+}
+
 }

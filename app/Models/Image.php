@@ -25,6 +25,6 @@ class Image extends Model
     }
     public function favorites()
     {
-        return $this->hasMany(Favorite::class);
+        return $this->hasMany(Favorite::class, 'image_id');
     }
 }

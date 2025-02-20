@@ -1,86 +1,191 @@
-// src/pages/Album.jsx
-import { Head, usePage } from '@inertiajs/react'; // Inertia.js hooks untuk mengatur Head dan mengambil data user
-import Sidebar from '@/Components/Sidebar'; // Sidebar yang sudah dibuat
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'; // Layout yang sudah ada
+import { Head, usePage } from '@inertiajs/react'; 
+import Sidebar from '@/Components/Sidebar'; 
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'; 
+import { useState } from 'react'; 
+import { Inertia } from '@inertiajs/inertia'; 
 
 export default function Album() {
-    const { user } = usePage().props.auth; // Mengambil data user yang sedang login
+    const { albums } = usePage().props; // Mengambil data album dari server
+    const [isCreatingAlbum, setIsCreatingAlbum] = useState(false);
+    const [isUploadingImage, setIsUploadingImage] = useState(false); // Pastikan ini ada
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [errors, setErrors] = useState({});
+    const [selectedAlbum, setSelectedAlbum] = useState(null);
+    const [image, setImage] = useState(null);
 
-    // Contoh data album dengan kategori galeri
-    const albums = [
-        {
-            title: "Nature",
-            gallery: [
-                { id: 1, title: "Mountain View", image: "https://via.placeholder.com/300" },
-                { id: 2, title: "Forest Path", image: "https://via.placeholder.com/300" },
-                { id: 3, title: "Sunset Beach", image: "https://via.placeholder.com/300" }
-            ]
-        },
-        {
-            title: "Travel",
-            gallery: [
-                { id: 4, title: "Paris City", image: "https://via.placeholder.com/300" },
-                { id: 5, title: "New York Skyline", image: "https://via.placeholder.com/300" }
-            ]
-        },
-        {
-            title: "Portraits",
-            gallery: [
-                { id: 6, title: "Portrait of Man", image: "https://via.placeholder.com/300" },
-                { id: 7, title: "Portrait of Woman", image: "https://via.placeholder.com/300" }
-            ]
+    const handleCreateAlbum = () => {
+        setIsCreatingAlbum(true);
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault(); // Mencegah reload halaman
+        const userId = usePage().props.auth.user.id;
+
+        Inertia.post('/albums', { 
+            title, 
+            description, 
+            user_id: userId  
+        }, {
+            onSuccess: () => {
+                setIsCreatingAlbum(false);
+                setTitle('');
+                setDescription('');
+            },
+            onError: (errors) => {
+                setErrors(errors);
+            }
+        });
+    };
+
+    const handleAlbumClick = (albumId) => {
+        setSelectedAlbum(albumId);
+        setIsUploadingImage(true); // Pastikan ini ada
+    };
+
+    const handleImageChange = (e) => {
+        setImage(e.target.files[0]);
+    };
+
+    const handleImageUpload = (e) => {
+        e.preventDefault();
+
+        if (!selectedAlbum || !image) {
+            console.error("Album or Image not selected.");
+            return;
         }
-    ];
+
+        const formData = new FormData();
+        formData.append('image', image);
+
+        Inertia.post(`/albums/${selectedAlbum}/images`, formData, {
+            onSuccess: () => {
+                setImage(null);
+                setIsUploadingImage(false);
+            },
+            onError: (errors) => {
+                console.error(errors);
+            }
+        });
+    };
 
     return (
         <AuthenticatedLayout>
             <Head title="Album" />
 
             <div className="flex">
-                {/* Sidebar */}
                 <Sidebar />
 
-                {/* Main Content Area */}
                 <div className="flex-1 p-6 transition-all ml-0 sm:ml-64">
-                    {/* Album Header */}
                     <div className="flex items-center justify-between">
                         <h1 className="text-3xl font-semibold text-gray-800">Your Albums</h1>
-
-                        {/* Search Bar */}
-                        <div className="flex items-center space-x-2">
-                            <input
-                                type="text"
-                                placeholder="Search your albums..."
-                                className="p-2 border rounded-lg w-64"
-                            />
-                            <button className="bg-blue-500 text-white p-2 rounded-lg">Search</button>
-                        </div>
+                        <button
+                            onClick={handleCreateAlbum}
+                            className="bg-green-500 text-white p-2 rounded-lg"
+                        >
+                            Create Album
+                        </button>
                     </div>
 
-                    {/* Album Content */}
-                    <div className="mt-6">
-                        {albums.map((album, index) => (
-                            <div key={index} className="mb-8">
-                                <h2 className="text-xl font-semibold text-gray-800">{album.title}</h2>
-
-                                {/* Foto-foto dalam album */}
-                                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {album.gallery.map((photo) => (
-                                        <div key={photo.id} className="bg-gray-100 p-4 rounded-lg shadow-md">
-                                            <img
-                                                src={photo.image}
-                                                alt={photo.title}
-                                                className="w-full h-48 object-cover rounded-md"
-                                            />
-                                            <p className="mt-2 text-gray-600 text-sm">{photo.title}</p>
-                                        </div>
-                                    ))}
+                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {albums && albums.length > 0 ? (
+                            albums.map((album) => (
+                                <div
+                                    key={album.id}
+                                    className="bg-gray-100 p-4 rounded-lg shadow-md cursor-pointer"
+                                    onClick={() => handleAlbumClick(album.id)}
+                                >
+                                    <h2 className="text-xl font-semibold text-gray-800">{album.title}</h2>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            <p>No albums found.</p>
+                        )}
                     </div>
                 </div>
             </div>
+
+            {isCreatingAlbum && (
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                        <h2 className="text-2xl font-semibold text-gray-800">Create New Album</h2>
+                        <form onSubmit={handleSubmit}>
+                            <div className="mt-4">
+                                <label className="block text-gray-700">Album Title</label>
+                                <input
+                                    type="text"
+                                    name="title"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    placeholder="Enter album title"
+                                    className="p-2 border rounded-lg w-full mt-2"
+                                />
+                                {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
+                            </div>
+                            <div className="mt-4">
+                                <label className="block text-gray-700">Album Description</label>
+                                <textarea
+                                    name="description"
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="Enter album description"
+                                    className="p-2 border rounded-lg w-full mt-2"
+                                />
+                                {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
+                            </div>
+                            <div className="mt-4 flex justify-end space-x-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsCreatingAlbum(false)}
+                                    className="bg-gray-300 text-gray-700 p-2 rounded-lg"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="bg-blue-500 text-white p-2 rounded-lg"
+                                >
+                                    Create Album
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {isUploadingImage && (
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                        <h2 className="text-2xl font-semibold text-gray-800">Upload Image to Album</h2>
+                        <form onSubmit={handleImageUpload}>
+                            <div className="mt-4">
+                                <input
+                                    type="file"
+                                    onChange={handleImageChange}
+                                    accept="image/*"
+                                    className="p-2 border rounded-lg"
+                                />
+                            </div>
+                            <div className="mt-4 flex justify-end space-x-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsUploadingImage(false)}
+                                    className="bg-gray-300 text-gray-700 p-2 rounded-lg"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="bg-blue-500 text-white p-2 rounded-lg"
+                                    disabled={!image}
+                                >
+                                    Upload Image
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </AuthenticatedLayout>
     );
 }

@@ -25,8 +25,33 @@ class FavoriteController extends Controller
 
     public function index()
     {
-        $favorites = Favorite::with('image')->where('user_id', Auth::id())->get();
-        return response()->json($favorites);
+        try {
+            // Ambil semua gambar favorit yang dimiliki oleh user yang sedang login
+            $favorites = Favorite::with('image')->where('user_id', Auth::id())->get();
+    
+            // Hitung jumlah favorit yang dimiliki oleh user
+            $favoriteCount = $favorites->count();
+    
+            // Jika data favorit tidak ada
+            if ($favorites->isEmpty()) {
+                return response()->json([
+                    'favoriteCount' => 0,
+                    'favorites' => [],
+                    'message' => 'No favorites found',
+                ]);
+            }
+    
+            // Mengembalikan response JSON dengan data favorit dan jumlah favorit
+            return response()->json([
+                'favoriteCount' => $favoriteCount,
+                'favorites' => $favorites,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Internal Server Error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
     
     public function destroy($id)
