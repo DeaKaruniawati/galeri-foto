@@ -1,31 +1,32 @@
-import { Head, usePage } from '@inertiajs/react'; 
-import Sidebar from '@/Components/Sidebar'; 
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'; 
-import { useState } from 'react'; 
-import { Inertia } from '@inertiajs/inertia'; 
+import { Head, usePage } from '@inertiajs/react';
+import Sidebar from '@/Components/Sidebar';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { useState } from 'react';
+import axios from 'axios'; // Pastikan axios diimpor
+import { Inertia } from '@inertiajs/inertia';
 
 export default function Album() {
-    const { albums } = usePage().props; // Mengambil data album dari server
+    const { albums, auth } = usePage().props; // Mengambil data album dari server
     const [isCreatingAlbum, setIsCreatingAlbum] = useState(false);
-    const [isUploadingImage, setIsUploadingImage] = useState(false); // Pastikan ini ada
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [errors, setErrors] = useState({});
     const [selectedAlbum, setSelectedAlbum] = useState(null);
-    const [image, setImage] = useState(null);
+    const [photo, setPhoto] = useState(null);
 
     const handleCreateAlbum = () => {
         setIsCreatingAlbum(true);
     };
 
     const handleSubmit = (e) => {
-        e.preventDefault(); // Mencegah reload halaman
-        const userId = usePage().props.auth.user.id;
+        e.preventDefault();
+        const userId = auth.user.id;
 
         Inertia.post('/albums', { 
             title, 
             description, 
-            user_id: userId  
+            user_id: userId     
         }, {
             onSuccess: () => {
                 setIsCreatingAlbum(false);
@@ -40,33 +41,36 @@ export default function Album() {
 
     const handleAlbumClick = (albumId) => {
         setSelectedAlbum(albumId);
-        setIsUploadingImage(true); // Pastikan ini ada
+        setIsUploadingPhoto(true);
     };
 
-    const handleImageChange = (e) => {
-        setImage(e.target.files[0]);
+    const handlePhotoChange = (e) => {
+        setPhoto(e.target.files[0]);
     };
 
-    const handleImageUpload = (e) => {
+    const handlePhotoUpload = async (e) => {
         e.preventDefault();
 
-        if (!selectedAlbum || !image) {
-            console.error("Album or Image not selected.");
+        if (!selectedAlbum || !photo) {
+            console.error("Album or Photo not selected.");
             return;
         }
 
         const formData = new FormData();
-        formData.append('image', image);
+        formData.append('photo', photo);
 
-        Inertia.post(`/albums/${selectedAlbum}/images`, formData, {
-            onSuccess: () => {
-                setImage(null);
-                setIsUploadingImage(false);
-            },
-            onError: (errors) => {
-                console.error(errors);
-            }
-        });
+        try {
+            const response = await axios.post(`/albums/${selectedAlbum}/photos`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            console.log('Photo uploaded successfully:', response.data);
+            setPhoto(null); // Reset foto setelah upload
+            setIsUploadingPhoto(false); // Selesai unggah foto
+        } catch (error) {
+            console.error('Error uploading photo:', error);
+        }
     };
 
     return (
@@ -96,6 +100,27 @@ export default function Album() {
                                     onClick={() => handleAlbumClick(album.id)}
                                 >
                                     <h2 className="text-xl font-semibold text-gray-800">{album.title}</h2>
+                                    
+                                    {/* Menampilkan foto-foto dalam album */}
+                                    <div className="mt-4 grid grid-cols-2 gap-4">
+                                    {album.photos && album.photos.length > 0 ? (
+     album.photos.map((photo) => {
+        console.log(photo.url); // Log URL untuk memastikan nilai yang benar
+        return (
+            <div key={photo.id} className="photo-container">
+                <img
+                    src={photo.url}
+                    alt="Album Photo"
+                    className="w-full h-32 object-cover rounded-lg"
+                />
+            </div>
+        );
+    })
+) : (
+    <p>No photos found in this album.</p>
+)}
+
+                                    </div>
                                 </div>
                             ))
                         ) : (
@@ -107,7 +132,7 @@ export default function Album() {
 
             {isCreatingAlbum && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-96">
                         <h2 className="text-2xl font-semibold text-gray-800">Create New Album</h2>
                         <form onSubmit={handleSubmit}>
                             <div className="mt-4">
@@ -153,23 +178,23 @@ export default function Album() {
                 </div>
             )}
 
-            {isUploadingImage && (
+            {isUploadingPhoto && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg">
-                        <h2 className="text-2xl font-semibold text-gray-800">Upload Image to Album</h2>
-                        <form onSubmit={handleImageUpload}>
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-96">
+                        <h2 className="text-2xl font-semibold text-gray-800">Upload Photo to Album</h2>
+                        <form onSubmit={handlePhotoUpload}>
                             <div className="mt-4">
                                 <input
                                     type="file"
-                                    onChange={handleImageChange}
+                                    onChange={handlePhotoChange}
                                     accept="image/*"
-                                    className="p-2 border rounded-lg"
+                                    className="p-2 border rounded-lg w-full"
                                 />
                             </div>
                             <div className="mt-4 flex justify-end space-x-4">
                                 <button
                                     type="button"
-                                    onClick={() => setIsUploadingImage(false)}
+                                    onClick={() => setIsUploadingPhoto(false)}
                                     className="bg-gray-300 text-gray-700 p-2 rounded-lg"
                                 >
                                     Cancel
@@ -177,9 +202,9 @@ export default function Album() {
                                 <button
                                     type="submit"
                                     className="bg-blue-500 text-white p-2 rounded-lg"
-                                    disabled={!image}
+                                    disabled={!photo}
                                 >
-                                    Upload Image
+                                    Upload Photo
                                 </button>
                             </div>
                         </form>

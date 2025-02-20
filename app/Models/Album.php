@@ -9,17 +9,12 @@ class Album extends Model
 {
     use HasFactory;
 
+    // Menentukan atribut yang dapat diisi (mass assignable)
     protected $fillable = ['title', 'description', 'user_id'];
-
-    // Relasi dengan gambar-gambar di album ini
-    public function images()
+    
+    // Relasi: Album memiliki banyak foto
+    public function photos()
     {
-        return $this->hasMany(Image::class);
-    }
-
-    // Relasi dengan model User
-    public function user()
-    {
-        return $this->belongsTo(User::class);
+        return $this->hasMany(Photo::class);
     }
 }

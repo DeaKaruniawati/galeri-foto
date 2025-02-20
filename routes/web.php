@@ -5,9 +5,11 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\PhotoController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth; // Pastikan Auth facade diimport
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 
 // Menangani Halaman Utama
 Route::get('/', function () {
@@ -43,18 +45,29 @@ Route::get('/gallery', function () {
 })->middleware(['auth', 'verified'])->name('gallery');
 
 // Route untuk Album
-Route::get('/album', function () {
-    return Inertia::render('Album');
-})->middleware(['auth', 'verified'])->name('album');
+Route::get('/album', [AlbumController::class, 'index'])->middleware(['auth', 'verified'])->name('album');
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/albums', [AlbumController::class, 'index'])->name('albums.index');
-    Route::post('/albums', [AlbumController::class, 'store'])->name('albums.store');
-    Route::post('/albums/{album}/images', [AlbumController::class, 'storeImage'])->name('albums.storeImage');
+// Rute untuk membuat album
+Route::post('/albums', [AlbumController::class, 'store'])->middleware(['auth', 'verified'])->name('albums.store');
+
+// Menampilkan album
+Route::get('/albums/{id}', [AlbumController::class, 'show'])->middleware(['auth', 'verified'])->name('albums.show');
+
+// Foto upload ke album
+Route::get('albums/{albumId}/photos/create', [PhotoController::class, 'create'])->middleware(['auth', 'verified'])->name('photos.create');
+// Menyimpan foto ke album tertentu
+Route::post('/albums/{albumId}/photos', [PhotoController::class, 'store'])->name('photos.store');
+Route::get('storage/{filename}', function ($filename) {
+    return Storage::download('public/photos/' . $filename);
 });
 
+// Menampilkan foto
+Route::get('photos/{id}', [PhotoController::class, 'show'])->middleware(['auth', 'verified'])->name('photos.show');
 
-// Route untuk halaman Favorit (hanya perlu middleware 'auth' jika pengguna harus login)
+// Menghapus foto
+Route::delete('photos/{id}', [PhotoController::class, 'destroy'])->middleware(['auth', 'verified'])->name('photos.destroy');
+
+// Route untuk halaman Favorit
 Route::get('/favorit', function () {
     return Inertia::render('Favorit');
 })->middleware(['auth', 'verified'])->name('favorit');
