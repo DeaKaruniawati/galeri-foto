@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Models\Admin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -29,6 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->authGuard('admin') // Explicitly set the guard
             ->colors([
                 'primary' => Color::Amber,
             ])
