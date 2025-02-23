@@ -1,12 +1,12 @@
 import { Head, usePage } from '@inertiajs/react';
 import Sidebar from '@/Components/Sidebar';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { useState } from 'react';
-import axios from 'axios'; // Pastikan axios diimpor
-import { Inertia } from '@inertiajs/inertia';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export default function Album() {
-    const { albums, auth } = usePage().props; // Mengambil data album dari server
+    const { albums: initialAlbums, auth } = usePage().props;
+    const [albums, setAlbums] = useState(initialAlbums);
     const [isCreatingAlbum, setIsCreatingAlbum] = useState(false);
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     const [title, setTitle] = useState('');
@@ -15,37 +15,50 @@ export default function Album() {
     const [selectedAlbum, setSelectedAlbum] = useState(null);
     const [photo, setPhoto] = useState(null);
 
-    const handleCreateAlbum = () => {
-        setIsCreatingAlbum(true);
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const userId = auth.user.id;
-
-        Inertia.post('/albums', { 
-            title, 
-            description, 
-            user_id: userId     
-        }, {
-            onSuccess: () => {
-                setIsCreatingAlbum(false);
-                setTitle('');
-                setDescription('');
-            },
-            onError: (errors) => {
-                setErrors(errors);
+    useEffect(() => {
+        if (selectedAlbum) {
+            const updatedAlbum = albums.find((album) => album.id === selectedAlbum.id);
+            if (updatedAlbum) {
+                setSelectedAlbum(updatedAlbum);
             }
-        });
-    };
+        }
+    }, [albums]);
 
-    const handleAlbumClick = (albumId) => {
-        setSelectedAlbum(albumId);
-        setIsUploadingPhoto(true);
+    const handleAlbumClick = (album) => {
+        setSelectedAlbum(album); // Store album data in state
     };
 
     const handlePhotoChange = (e) => {
         setPhoto(e.target.files[0]);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setErrors({});
+        
+        try {
+            await axios.post("/albums", { title, description });
+    
+            window.location.reload(); // 🔄 Reload after successful album creation
+        } catch (error) {
+            if (error.response?.data?.errors) {
+                setErrors(error.response.data.errors);
+            } else {
+                console.error("Error creating album:", error);
+            }
+        }
+    };
+
+    const handleDeleteAlbum = async (albumId) => {
+        if (!window.confirm("Are you sure you want to delete this album?")) return;
+    
+        try {
+            await axios.delete(`/albums/delete/${albumId}`);
+    
+            window.location.reload(); // 🔄 Reload after successful album deletion
+        } catch (error) {
+            console.error("Error deleting album:", error.response?.data || error.message);
+        }
     };
 
     const handlePhotoUpload = async (e) => {
@@ -57,69 +70,98 @@ export default function Album() {
         }
 
         const formData = new FormData();
-        formData.append('photo', photo);
+        formData.append("photo", photo);
 
         try {
-            const response = await axios.post(`/albums/${selectedAlbum}/photos`, formData, {
+            const response = await axios.post(`/albums/${selectedAlbum.id}/photos`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            console.log('Photo uploaded successfully:', response.data);
-            setPhoto(null); // Reset foto setelah upload
-            setIsUploadingPhoto(false); // Selesai unggah foto
+
+            // ✅ Update albums list
+            setAlbums((prevAlbums) =>
+                prevAlbums.map((album) =>
+                    album.id === selectedAlbum.id
+                        ? { ...album, photos: [...album.photos, response.data.photo] }
+                        : album
+                )
+            );
+
+            setIsUploadingPhoto(false);
+            setPhoto(null);
         } catch (error) {
-            console.error('Error uploading photo:', error);
+            console.error("Upload failed:", error.response?.data || error.message);
+        }
+    };
+
+    const handleDeletePhoto = async (photoId) => {
+        if (!selectedAlbum) return;
+        if (!window.confirm("Are you sure you want to delete this photo?")) return;
+    
+        try {
+            await axios.delete(`/photos/${photoId}`);
+    
+            // ✅ Remove photo from state without refreshing
+            setAlbums((prevAlbums) =>
+                prevAlbums.map((album) =>
+                    album.id === selectedAlbum.id
+                        ? { ...album, photos: album.photos.filter((photo) => photo.id !== photoId) }
+                        : album
+                )
+            );
+        } catch (error) {
+            console.error("Failed to delete photo:", error.response?.data || error.message);
         }
     };
 
     return (
         <AuthenticatedLayout>
             <Head title="Album" />
-
             <div className="flex">
                 <Sidebar />
-
-                <div className="flex-1 p-6 transition-all ml-0 sm:ml-64">
+                <div className="flex-1 p-6 ml-0 sm:ml-64">
                     <div className="flex items-center justify-between">
                         <h1 className="text-3xl font-semibold text-gray-800">Your Albums</h1>
-                        <button
-                            onClick={handleCreateAlbum}
-                            className="bg-green-500 text-white p-2 rounded-lg"
-                        >
+                        <button onClick={() => setIsCreatingAlbum(true)} className="bg-green-500 text-white p-2 rounded-lg">
                             Create Album
                         </button>
                     </div>
 
                     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {albums && albums.length > 0 ? (
+                        {albums.length > 0 ? (
                             albums.map((album) => (
-                                <div
-                                    key={album.id}
-                                    className="bg-gray-100 p-4 rounded-lg shadow-md cursor-pointer"
-                                    onClick={() => handleAlbumClick(album.id)}
-                                >
-                                    <h2 className="text-xl font-semibold text-gray-800">{album.title}</h2>
-                                    
-                                    {/* Menampilkan foto-foto dalam album */}
-                                    <div className="mt-4 grid grid-cols-2 gap-4">
-                                    {album.photos && album.photos.length > 0 ? (
-     album.photos.map((photo) => {
-        console.log(photo.url); // Log URL untuk memastikan nilai yang benar
-        return (
-            <div key={photo.id} className="photo-container">
-                <img
-                    src={photo.url}
-                    alt="Album Photo"
-                    className="w-full h-32 object-cover rounded-lg"
-                />
-            </div>
-        );
-    })
-) : (
-    <p>No photos found in this album.</p>
-)}
-
+                                <div key={album.id} className="bg-gray-100 p-4 rounded-lg shadow-md cursor-pointer" onClick={() => handleAlbumClick(album)}>
+                                    <div className="flex items-center justify-between">
+                                        <h2 
+                                            className="text-xl font-semibold text-gray-800 cursor-pointer"
+                                            onClick={() => handleAlbumClick(album)}
+                                        >
+                                            {album.title}
+                                        </h2>
+                                        
+                                        {/* Delete Button (Top Right) */}
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Stop click from triggering album modal
+                                                handleDeleteAlbum(album.id);
+                                            }}
+                                            className="bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition"
+                                        >
+                                            🗑
+                                        </button>
+                                    </div>
+                                    {/* Album cover (first photo in album) */}
+                                    <div className="mt-4">
+                                        {album.photos.length > 0 ? (
+                                            <img
+                                                src={`/storage/${album.photos[0].path}`}
+                                                alt="Album Cover"
+                                                className="w-full h-40 object-cover rounded-lg"
+                                            />
+                                        ) : (
+                                            <p className="text-gray-500">No photos in this album.</p>
+                                        )}
                                     </div>
                                 </div>
                             ))
@@ -130,47 +172,79 @@ export default function Album() {
                 </div>
             </div>
 
+            {selectedAlbum && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 sm:w-3/4 lg:w-2/3 max-h-[80vh] overflow-y-auto">
+                        <h2 className="text-2xl font-semibold text-gray-800">{selectedAlbum.title}</h2>
+                        <p className="text-gray-600 mb-4">{selectedAlbum.description}</p>
+
+                        {/* Grid of Photos */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {selectedAlbum.photos.length > 0 ? (
+                                selectedAlbum.photos.map((photo) => (
+                                    <div key={photo.id} className="relative">
+                                        <img
+                                            src={`/storage/${photo.path}`}
+                                            alt="Album Photo"
+                                            className="w-full h-100 object-cover rounded-lg shadow-md"
+                                        />
+                                        {/* Delete Button */}
+                                        <button
+                                            onClick={() => handleDeletePhoto(photo.id)}
+                                            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+                                        >
+                                            ✖
+                                        </button>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-gray-500">No photos in this album.</p>
+                            )}
+                        </div>
+
+                        {/* Close Button */}
+                        <div className="mt-4 flex justify-start space-x-4">
+                            <button type="button" onClick={() => setSelectedAlbum(null)} className="bg-gray-300 text-gray-700 p-2 rounded-lg">
+                                Cancel
+                            </button>
+                            <button type="button" onClick={() => setIsUploadingPhoto(true)} className="bg-blue-500 text-white p-2 rounded-lg">
+                                Upload
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {isCreatingAlbum && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-full sm:w-96">
                         <h2 className="text-2xl font-semibold text-gray-800">Create New Album</h2>
-                        <form onSubmit={handleSubmit}>
-                            <div className="mt-4">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
                                 <label className="block text-gray-700">Album Title</label>
                                 <input
                                     type="text"
-                                    name="title"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    placeholder="Enter album title"
-                                    className="p-2 border rounded-lg w-full mt-2"
+                                    className="p-2 border rounded-lg w-full"
                                 />
-                                {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
+                                {errors.title && <p className="text-red-500 text-sm">{errors.title[0]}</p>}
                             </div>
-                            <div className="mt-4">
+                            <div>
                                 <label className="block text-gray-700">Album Description</label>
                                 <textarea
-                                    name="description"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Enter album description"
-                                    className="p-2 border rounded-lg w-full mt-2"
+                                    className="p-2 border rounded-lg w-full"
                                 />
-                                {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
+                                {errors.description && <p className="text-red-500 text-sm">{errors.description[0]}</p>}
                             </div>
-                            <div className="mt-4 flex justify-end space-x-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCreatingAlbum(false)}
-                                    className="bg-gray-300 text-gray-700 p-2 rounded-lg"
-                                >
+                            <div className="mt-4 flex justify-start space-x-4">
+                                <button type="button" onClick={() => setIsCreatingAlbum(false)} className="bg-gray-300 text-gray-700 p-2 rounded-lg">
                                     Cancel
                                 </button>
-                                <button
-                                    type="submit"
-                                    className="bg-blue-500 text-white p-2 rounded-lg"
-                                >
-                                    Create Album
+                                <button type="submit" className="bg-blue-500 text-white p-2 rounded-lg">
+                                    Add Album
                                 </button>
                             </div>
                         </form>
@@ -192,18 +266,10 @@ export default function Album() {
                                 />
                             </div>
                             <div className="mt-4 flex justify-end space-x-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsUploadingPhoto(false)}
-                                    className="bg-gray-300 text-gray-700 p-2 rounded-lg"
-                                >
+                                <button type="button" onClick={() => setIsUploadingPhoto(false)} className="bg-gray-300 text-gray-700 p-2 rounded-lg">
                                     Cancel
                                 </button>
-                                <button
-                                    type="submit"
-                                    className="bg-blue-500 text-white p-2 rounded-lg"
-                                    disabled={!photo}
-                                >
+                                <button type="submit" className="bg-blue-500 text-white p-2 rounded-lg">
                                     Upload Photo
                                 </button>
                             </div>

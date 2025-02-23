@@ -51,21 +51,23 @@ Route::get('/album', [AlbumController::class, 'index'])->middleware(['auth', 've
 Route::post('/albums', [AlbumController::class, 'store'])->middleware(['auth', 'verified'])->name('albums.store');
 
 // Menampilkan album
-Route::get('/albums/{id}', [AlbumController::class, 'show'])->middleware(['auth', 'verified'])->name('albums.show');
+Route::get('/albums/{id}', [AlbumController::class, 'showAlbum'])->middleware(['auth', 'verified'])->name('albums.show');
 
 // Foto upload ke album
 Route::get('albums/{albumId}/photos/create', [PhotoController::class, 'create'])->middleware(['auth', 'verified'])->name('photos.create');
 // Menyimpan foto ke album tertentu
-Route::post('/albums/{albumId}/photos', [PhotoController::class, 'store'])->name('photos.store');
+Route::post('/albums/{albumId}/photos', [PhotoController::class, 'store'])->name('photos.store')->middleware(['auth', 'verified']);
 Route::get('storage/{filename}', function ($filename) {
     return Storage::download('public/photos/' . $filename);
 });
+
+Route::delete('/albums/delete/{id}', [AlbumController::class, 'destroy'])->middleware(['auth', 'verified']);
 
 // Menampilkan foto
 Route::get('photos/{id}', [PhotoController::class, 'show'])->middleware(['auth', 'verified'])->name('photos.show');
 
 // Menghapus foto
-Route::delete('photos/{id}', [PhotoController::class, 'destroy'])->middleware(['auth', 'verified'])->name('photos.destroy');
+Route::delete('/photos/{id}', [PhotoController::class, 'destroy'])->middleware(['auth', 'verified'])->name('photos.destroy');
 
 // Route untuk halaman Favorit
 Route::get('/favorit', function () {

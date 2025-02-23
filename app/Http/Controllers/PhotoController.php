@@ -6,6 +6,7 @@ use App\Models\Album;
 use App\Models\Photo;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 
 class PhotoController extends Controller
 {
@@ -43,7 +44,22 @@ class PhotoController extends Controller
         }
 
         // Mengarahkan kembali ke album setelah foto berhasil diunggah
-        return redirect()->route('album')->with('success', 'Photo uploaded successfully!');
+        return response()->json([
+            'message' => 'Photo uploaded successfully!',
+            'photo' => $photo
+        ]);
+    }
+
+    public function destroy(Photo $photo)
+    {
+        // Delete the file from storage
+        $filePath = 'photos/' . basename($photo->path);
+        Storage::disk('public')->delete($filePath);
+
+        // Delete from the database
+        $photo->delete();
+
+        return response()->json(['message' => 'Photo deleted successfully']);
     }
 }
 
