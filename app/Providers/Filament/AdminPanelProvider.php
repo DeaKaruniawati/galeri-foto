@@ -12,16 +12,14 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
-use App\Filament\Widgets\TotalUsers;
-use App\Filament\Widgets\TotalImages;
+use App\Filament\Widgets\CreatedToday;
+use App\Filament\Widgets\Total;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-
-use App\Filament\Resources\ImageResource;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -43,8 +41,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                TotalUsers::class,
-                TotalImages::class
+                CreatedToday::class,
+                Total::class
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -59,9 +57,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            ->resources([
-                ImageResource::class,
             ]);
     }
 }
