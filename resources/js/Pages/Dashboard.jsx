@@ -79,9 +79,10 @@ export default function Dashboard() {
         <AuthenticatedLayout>
             <Head title="Dashboard" />
             <div className="flex">
-                <div className="flex-1 transition-all ml-0">
-                    <div className="w-full flex items-center justify-between">
-                        <h1 className="text-3xl font-semibold text-gray-800">Selamat datang di Dashboard Anda</h1>
+                <Sidebar />
+                <div className="flex-1 p-6 ml-0 sm:ml-64">
+                    <div className="flex items-center justify-between">
+                    <h1 className="text-3xl font-semibold text-gray-800">Hi, {user.name}! Selamat Datang</h1>
                         <div className="flex items-center space-x-2">
                             <input
                                 type="text"
@@ -99,19 +100,22 @@ export default function Dashboard() {
                     </div>
 
                     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div className="bg-gray-100 p-4 rounded-lg shadow-md">
-                            <h3 className="text-lg font-semibold">Total Foto</h3>
-                            <p>{totalImages}</p>
+                        <div className="p-4 rounded-lg shadow-md" style={{ backgroundColor: "#c7d2fe" }}>
+                            <h3 className="text-lg font-semibold text-[#175B68]">
+                                Total Foto
+                            </h3>
+                            <p className="text-[#175B68]">{totalImages}</p> {/* Menambahkan warna yang sama dengan judul */}
                         </div>
-                        <div className="bg-gray-100 p-4 rounded-lg shadow-md">
-                            <h3 className="text-lg font-semibold">Foto yang Di-upload Hari Ini</h3>
-                            <p>{todayImages.length}</p>
+                        <div className=" p-4 rounded-lg shadow-md"style={{ backgroundColor: "#c7d2fe" }}>
+                            <h3 className="text-lg font-semibold text-[#175B68]">Foto yang Di-upload Hari Ini</h3>
+                            <p className="text-[#175B68]">{todayImages.length}</p> {/* Menambahkan warna yang sama dengan judul */}
                         </div>
-                        <div className="bg-gray-100 p-4 rounded-lg shadow-md">
-                            <h3 className="text-lg font-semibold">Foto Favorit</h3>
-                            <p>{favoriteCount}</p>
+                        <div className=" q p-4 rounded-lg shadow-md"style={{ backgroundColor: "#c7d2fe" }}>
+                            <h3 className="text-lg font-semibold text-[#175B68]">Foto Favorit</h3>
+                            <p className="text-[#175B68]">{favoriteCount}</p> {/* Menambahkan warna yang sama dengan judul */}
                         </div>
                     </div>
+
 
                     <div className="mt-8 flex justify-between items-center">
                         <button

@@ -25,7 +25,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         <div className="flex h-16 justify-between">
                             <div className="flex">
                                 <div className="flex shrink-0 items-center">
-                                    <div className="text-xl font-bold text-white ml-20">
+                                    <div className="text-xl font-bold text-white ml-6">
                                         Website Galeri Foto
                                     </div>
                                 </div>
