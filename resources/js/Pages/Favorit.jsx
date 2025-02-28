@@ -48,7 +48,7 @@ export default function Favorit() {
                             favorites.map((favorite) => (
                                 <div key={favorite.image.id} className="bg-gray-100 p-4 rounded-lg shadow-md">
                                     <img
-                                        src={`/storage/images/${favorite.image.file_name}`}
+                                        src={`/storage/${favorite.image.file_path}`}
                                         alt={favorite.image.file_name}
                                         className="w-full h-48 object-cover rounded-md"
                                     />

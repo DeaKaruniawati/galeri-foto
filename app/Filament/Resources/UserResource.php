@@ -26,7 +26,7 @@ class UserResource extends Resource
             ->columns([
                 TextColumn::make('name')->sortable(),
                 TextColumn::make('email')->sortable()->searchable(),
-                BadgeColumn::make('created_at')->date()
+                BadgeColumn::make('created_at')->date()->sortable()
             ])
             ->searchPlaceholder('Search Email')
             ->actions([

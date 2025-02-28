@@ -149,7 +149,7 @@ export default function Dashboard() {
                             {filteredTodayImages.map((image) => (
                                 <div key={image.id} className="bg-gray-100 p-4 rounded-lg shadow-md">
                                     <img
-                                        src={`/storage/images/${image.file_name}`}
+                                        src={`/storage/${image.file_path}`}
                                         alt={image.file_name}
                                         className="w-full h-48 object-cover rounded-md"
                                     />

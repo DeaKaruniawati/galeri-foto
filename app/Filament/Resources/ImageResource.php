@@ -24,10 +24,11 @@ class ImageResource extends Resource
     {
         return $table
             ->columns([
-                ImageColumn::make('file_path')->label('Preview'),
-                TextColumn::make('user.name')->label('Uploaded By')->sortable(),
-                BadgeColumn::make('created_at')->label('Uploaded At')->date(),
+                ImageColumn::make('file_path')->label('Preview')->disk('public')->visibility('public'),
+                TextColumn::make('user.name')->label('Uploaded By')->searchable(),
+                BadgeColumn::make('created_at')->label('Uploaded At')->date()->sortable(),
             ])
+            ->searchPlaceholder('Search User')
             ->actions([
                 Tables\Actions\DeleteAction::make()
                 ->before(function ($record) {

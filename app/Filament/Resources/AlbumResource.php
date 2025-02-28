@@ -26,13 +26,12 @@ class AlbumResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('title')->sortable()->searchable(),
-                TextColumn::make('description')->limit(50),
-                BadgeColumn::make('photos_count')
-                    ->label('Photos')
-                    ->counts('photos')
-                    ->color('info'),
+                TextColumn::make('title')->searchable(),
+                BadgeColumn::make('photos_count')->label('Photos')->counts('photos')->color('info')->sortable(),
+                TextColumn::make('user.name')->label('Created By'),
+                BadgeColumn::make('created_at')->date()->sortable()
             ])
+            ->searchPlaceholder('Search Album')
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\DeleteAction::make()

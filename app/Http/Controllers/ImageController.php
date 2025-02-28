@@ -33,6 +33,7 @@ class ImageController extends Controller
  
          // Simpan informasi gambar ke database
          $image = new Image();
+         $image->user_id = Auth::id();
          $image->file_name = $filename; // Pastikan ini sesuai dengan kolom di database
          $image->file_size = $file->getSize();
          $image->file_type = $file->getMimeType();
@@ -52,7 +53,7 @@ class ImageController extends Controller
     public function index()
     {
         // Ambil semua gambar dari database
-        $images = Image::all(); // Jika Anda ingin mengambil gambar berdasarkan pengguna, gunakan Auth::id()
+        $images = Image::where('user_id', Auth::id())->get(); // Jika Anda ingin mengambil gambar berdasarkan pengguna, gunakan Auth::id()
         return response()->json($images); // Mengembalikan data gambar dalam format JSON
     }
 
@@ -63,6 +64,7 @@ class ImageController extends Controller
             // Ambil gambar yang di-upload hari ini berdasarkan 'created_at'
             $todayImages = Image::whereDate('created_at', today())
                                 ->withCount('favorites') // Menghitung jumlah favorit
+                                ->where('user_id', Auth::id())
                                 ->get();
 
             // Mengembalikan response JSON
@@ -117,27 +119,10 @@ class ImageController extends Controller
             // Temukan gambar berdasarkan ID
             $image = Image::findOrFail($id);
 
-            // Ambil path file saat ini
-            $currentFilePath = public_path('storage/images/' . $image->file_name);
-
-            // Tentukan nama file baru
-            $newFileName = $request->file_name;
-            $newFilePath = public_path('storage/images/' . $newFileName);
-
-            // Cek apakah file dengan nama baru sudah ada
-            if (file_exists($newFilePath)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'File with the new name already exists.'
-                ], 400);
-            }
-
-            // Ganti nama file di sistem file
-            rename($currentFilePath, $newFilePath);
-
-            // Perbarui nama file di database
-            $image->file_name = $newFileName;
-            $image->save();
+            // Update hanya file_name di database (tanpa mengubah path)
+            $image->update([
+                'file_name' => $request->file_name,
+            ]);
 
             return response()->json([
                 'success' => true,

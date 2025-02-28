@@ -127,7 +127,7 @@ export default function Gallery() {
                             filteredImages.map((image) => (
                                 <div key={image.id} className="bg-gray-100 p-4 rounded-lg shadow-md">
                                     <img
-                                        src={`/storage/images/${image.file_name}`}
+                                        src={`/storage/${image.file_path}`}
                                         alt={image.file_name}
                                         className="w-full h-48 object-cover rounded-md cursor-pointer"
                                         onClick={() => openModal(image)} // Open modal when clicked
@@ -161,7 +161,7 @@ export default function Gallery() {
                 &times;
             </button>
             <img
-                src={`/storage/images/${modalImage.file_name}`}
+                src={`/storage/${modalImage.file_path}`}
                 alt={modalImage.file_name}
                 className="max-w-full max-h-[90vh] object-contain"
             />
