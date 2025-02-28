@@ -152,23 +152,22 @@ export default function Gallery() {
 
                     {/* Modal for full image view */}
                     {modalImage && (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div className="bg-white p-6 rounded-lg relative">
-            <button
-                className="absolute top-2 right-2 text-gray-700 text-3xl"
-                onClick={closeModal}
-            >
-                &times;
-            </button>
-            <img
-                src={`/storage/${modalImage.file_path}`}
-                alt={modalImage.file_name}
-                className="max-w-full max-h-[90vh] object-contain"
-            />
-        </div>
-    </div>
-)}
-
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                            <div className="bg-white p-6 rounded-lg relative">
+                                <button
+                                    className="absolute top-2 right-2 text-gray-700 text-3xl"
+                                    onClick={closeModal}
+                                >
+                                    &times;
+                                </button>
+                                <img
+                                    src={`/storage/${modalImage.file_path}`}
+                                    alt={modalImage.file_name}
+                                    className="max-w-full max-h-[90vh] object-contain"
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </AuthenticatedLayout>
