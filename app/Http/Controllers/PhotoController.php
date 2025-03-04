@@ -32,6 +32,8 @@ class PhotoController extends Controller
         // Cari album berdasarkan ID
         $album = Album::findOrFail($albumId); // Pastikan album ada
 
+        $file = $request->file('photo');
+
         // Menyimpan foto ke album
         if ($request->hasFile('photo')) {
             $photoPath = $request->file('photo')->store('photos', 'public'); // Menyimpan file foto
@@ -40,6 +42,7 @@ class PhotoController extends Controller
             $photo = Photo::create([
                 'album_id' => $album->id,
                 'path' => $photoPath, // Path file foto
+                'file_size' => $file->getSize()
             ]);
         }
 
@@ -50,11 +53,11 @@ class PhotoController extends Controller
         ]);
     }
 
-    public function destroy(Photo $photo)
+    public function destroy($id)
     {
+        $photo = Photo::findOrFail($id);
         // Delete the file from storage
-        $filePath = 'photos/' . basename($photo->path);
-        Storage::disk('public')->delete($filePath);
+        Storage::disk('public')->delete($photo->path);
 
         // Delete from the database
         $photo->delete();

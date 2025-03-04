@@ -30,7 +30,10 @@ class UserResource extends Resource
             ])
             ->searchPlaceholder('Search Email')
             ->actions([
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                ->before(function ($record) {
+                    $record->delete();
+                }),
             ]);
     }
 

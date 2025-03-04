@@ -143,7 +143,7 @@ class ImageController extends Controller
         $image = Image::findOrFail($id);
 
         // Tentukan path file yang akan dihapus
-        $filePath = public_path('storage/images/' . $image->file_name);
+        $filePath = public_path('storage/' . $image->file_path);
 
         // Cek apakah file ada sebelum menghapus
         if (file_exists($filePath)) {

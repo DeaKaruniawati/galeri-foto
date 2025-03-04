@@ -12,6 +12,7 @@ class Photo extends Model
     protected $fillable = [
         'album_id',
         'path',
+        'file_size'
     ];
 
     // Relasi: Foto milik sebuah album

@@ -14,6 +14,7 @@ use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use App\Filament\Widgets\CreatedToday;
 use App\Filament\Widgets\Total;
+use App\Filament\Widgets\TotalStorageUsed;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -43,7 +44,8 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 CreatedToday::class,
-                Total::class
+                Total::class,
+                TotalStorageUsed::class
             ])
             ->middleware([
                 EncryptCookies::class,
