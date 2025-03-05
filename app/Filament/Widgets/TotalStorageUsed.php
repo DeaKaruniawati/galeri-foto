@@ -14,7 +14,7 @@ class TotalStorageUsed extends BaseWidget
 
     protected function getColumns(): int
     {
-        return 2; // This makes the widget take half of the screen
+        return 2;
     }
 
     protected function getStats(): array
