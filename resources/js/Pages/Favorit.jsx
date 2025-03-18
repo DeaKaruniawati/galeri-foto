@@ -8,12 +8,15 @@ export default function Favorit() {
     const { user } = usePage().props.auth; // Mengambil data user yang sedang login
     const [favorites, setFavorites] = useState([]);
     const [modalImage, setModalImage] = useState(null);
+    const [searchQuery, setSearchQuery] = useState(''); // Menambahkan state untuk query pencarian
+    const [filteredFavorites, setFilteredFavorites] = useState([]); // Menyimpan gambar yang sudah difilter
 
     useEffect(() => {
         const fetchFavorites = async () => {
             try {
                 const response = await axios.get(route('favorites.index'));
                 setFavorites(response.data.favorites);
+                setFilteredFavorites(response.data.favorites); // Menyimpan semua favorit saat pertama kali load
             } catch (error) {
                 console.error("Error fetching favorites:", error);
             }
@@ -22,6 +25,18 @@ export default function Favorit() {
         fetchFavorites();
     }, []);
 
+    useEffect(() => {
+        // Memfilter favorit berdasarkan query pencarian
+        if (searchQuery) {
+            const filtered = favorites.filter(favorite =>
+                favorite.image.file_name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setFilteredFavorites(filtered);
+        } else {
+            setFilteredFavorites(favorites); // Jika tidak ada query, tampilkan semua favorit
+        }
+    }, [searchQuery, favorites]); // Menjalankan efek setiap kali searchQuery atau favorites berubah
+
     const openModal = (image) => {
         setModalImage(image); // Set the clicked image to display in the modal
     };
@@ -29,7 +44,6 @@ export default function Favorit() {
     const closeModal = () => {
         setModalImage(null); // Close the modal by setting it to null
     };
-
 
     return (
         <AuthenticatedLayout>
@@ -46,6 +60,8 @@ export default function Favorit() {
                             <input
                                 type="text"
                                 placeholder="Search your favorites..."
+                                value={searchQuery} // Menghubungkan input dengan state
+                                onChange={(e) => setSearchQuery(e.target.value)} // Memperbarui searchQuery
                                 className="p-2 border rounded-lg w-64"
                             />
                             <button className="bg-blue-500 text-white p-2 rounded-lg">Search</button>
@@ -53,8 +69,8 @@ export default function Favorit() {
                     </div>
 
                     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {favorites.length > 0 ? (
-                            favorites.map((favorite) => (
+                        {filteredFavorites.length > 0 ? (
+                            filteredFavorites.map((favorite) => (
                                 <div key={favorite.image.id} className="bg-gray-100 p-4 rounded-lg shadow-md">
                                     <img
                                         src={`/storage/${favorite.image.file_path}`}

@@ -95,10 +95,6 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    <div className="mt-4">
-                        <h2 className="text-xl font-medium text-gray-700">Halo, {user.name}!</h2>
-                    </div>
-
                     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div className="p-4 rounded-lg shadow-md" style={{ backgroundColor: "#c7d2fe" }}>
                             <h3 className="text-lg font-semibold text-[#175B68]">
